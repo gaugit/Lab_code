@@ -1,14 +1,11 @@
-/*
-TEST semaphore and mutex
-Consider binary semaphore
-*/
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
 #include<pthread.h>
 #include<semaphore.h>
 #include<signal.h>
-#define BUFFER_SIZE 100
+
+#define BUFFER_SIZE 200
 
 typedef int buffer_item;
 buffer_item buffer[BUFFER_SIZE];
@@ -31,11 +28,17 @@ int main(int argc, char **argv)
   //int arr_val[340];
   char cons[340][12];
   
+  if (argc < 2)
+  {
+	  printf("\n Please enter argument\n");
+	  exit(0);
+  }
+  
   state1 = pthread_mutex_init(&mutx, NULL);
   state2 = sem_init(&buff_sem, 0 ,0);
   
   //mutex initialization
-  //semaphore initialization, first value = BUFFER_SIZE
+  //semaphore initialization, first value = 0
   
   if(state1||state2!=0)
     puts("Error mutex & semaphore initialization!!!");
@@ -47,8 +50,6 @@ int main(int argc, char **argv)
   for(i=0;i<atoi(argv[1]);i++)
   {
     sprintf(cons[i], "Consumer %d", i);
-    //arr_val[i]=i;
-    //pthread_create(&arr_t[i], NULL, thread_Remove,(void *)&arr_val[i]);
     pthread_create(&arr_t[i], NULL, thread_Remove,&cons[i]);
   }
   
@@ -60,9 +61,7 @@ int main(int argc, char **argv)
   {
     pthread_join(arr_t[i], NULL);
   }
-
-//printf("Terminate => %s, %s, %s!!!\n", (char*)&thread1, (char*)&thread2, (char*)&thread3);
-//  printf("Final Index: %d\n", index_counter_in);
+  
   sem_destroy(&buff_sem); // destroy semaphore
   pthread_mutex_destroy(&mutx); // destroy mutex
   return 0;
@@ -95,7 +94,6 @@ void *thread_Insert(void *arg)
 // Thread decreases item
 void *thread_Remove(void *arg)
 {
-  //printf("Creating Thread: %d\n", *((int*)arg));
   printf("Creating Thread: %s\n", (char*)arg);
 
   while(1)
@@ -107,7 +105,6 @@ void *thread_Remove(void *arg)
       sleep(1);
       buffer[index_counter_out] = 0;
       printf("%s: REMOVE item from BUFFER %d\n", (char*)arg, index_counter_out);
-      //printf("%d: REMOVE item from BUFFER %d\n", *((int*)arg), index_counter_out);
       index_counter_out++;
       pthread_mutex_unlock(&mutx);
       sleep(1);

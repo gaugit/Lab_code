@@ -1,0 +1,13 @@
+The objective of project is to show how to create threads and synchronize them using Linux lpthread library.
+
+Source files:
+Lab2.c
+
+Executable files:
+main.o
+
+Instructions:
+Use the "make all" command to compile all source files
+
+Execution:
+$:./main.o n     //where n is the number of consumer threads the user wants to create
