@@ -8,7 +8,7 @@ Consider binary semaphore
 #include<pthread.h>
 #include<semaphore.h>
 #include<signal.h>
-#define BUFFER_SIZE 10
+#define BUFFER_SIZE 100
 
 typedef int buffer_item;
 buffer_item buffer[BUFFER_SIZE];
@@ -19,18 +19,19 @@ void *thread_Insert(void *arg); // function for sending
 void *thread_Remove(void *arg); // function for receiving
 sem_t buff_sem; // semaphore
 pthread_mutex_t mutx; // mutex
-char thread1[]="Thread A";
-char thread2[]="Thread B";
-char thread3[]="Thread C";
+char thread1[]="Producer A";
+char thread2[]="Producer B";
 
 int main(int argc, char **argv)
 {
   pthread_t t1, t2, t3;
+  pthread_t arr_t[340];
   void *thread_result;
-  int state1, state2;
+  int state1, state2,i=0;
+  //int arr_val[340];
+  char cons[340][12];
   
   state1 = pthread_mutex_init(&mutx, NULL);
-  //state2 = sem_init(&buff_sem, 0 ,BUFFER_SIZE);
   state2 = sem_init(&buff_sem, 0 ,0);
   
   //mutex initialization
@@ -41,25 +42,36 @@ int main(int argc, char **argv)
   
   // Create thread1, thread2, thread3
   pthread_create(&t1, NULL, thread_Insert, &thread1);
-  pthread_create(&t2, NULL, thread_Remove, &thread2);
-  pthread_create(&t3, NULL, thread_Remove, &thread3);
+  pthread_create(&t2, NULL, thread_Insert, &thread2);
+  
+  for(i=0;i<atoi(argv[1]);i++)
+  {
+    sprintf(cons[i], "Consumer %d", i);
+    //arr_val[i]=i;
+    //pthread_create(&arr_t[i], NULL, thread_Remove,(void *)&arr_val[i]);
+    pthread_create(&arr_t[i], NULL, thread_Remove,&cons[i]);
+  }
   
   // Waiting thread to terminate
   pthread_join(t1, &thread_result);
   pthread_join(t2, &thread_result);
-  pthread_join(t3, &thread_result);
-  printf("Terminate => %s, %s, %s!!!\n", (char*)&thread1, (char*)&thread2, (char*)&thread3);
-  printf("Final Index: %d\n", index_counter_in);
+  
+  for(i=0;i<atoi(argv[1]);i++)
+  {
+    pthread_join(arr_t[i], NULL);
+  }
+
+//printf("Terminate => %s, %s, %s!!!\n", (char*)&thread1, (char*)&thread2, (char*)&thread3);
+//  printf("Final Index: %d\n", index_counter_in);
   sem_destroy(&buff_sem); // destroy semaphore
   pthread_mutex_destroy(&mutx); // destroy mutex
   return 0;
 }
+
 // Thread increases item
 void *thread_Insert(void *arg)
 {
-  //int i;
   printf("Creating Thread: %s\n", (char*)arg);
-  //for(i=0;i<BUFFER_SIZE;i++)
   while(1)
   {
     if(index_counter_in<BUFFER_SIZE)
@@ -83,10 +95,9 @@ void *thread_Insert(void *arg)
 // Thread decreases item
 void *thread_Remove(void *arg)
 {
-  int i;
+  //printf("Creating Thread: %d\n", *((int*)arg));
   printf("Creating Thread: %s\n", (char*)arg);
 
-  //for(i=0;i<BUFFER_SIZE/2;i++)
   while(1)
   {
     if(index_counter_out<BUFFER_SIZE)
@@ -96,6 +107,7 @@ void *thread_Remove(void *arg)
       sleep(1);
       buffer[index_counter_out] = 0;
       printf("%s: REMOVE item from BUFFER %d\n", (char*)arg, index_counter_out);
+      //printf("%d: REMOVE item from BUFFER %d\n", *((int*)arg), index_counter_out);
       index_counter_out++;
       pthread_mutex_unlock(&mutx);
       sleep(1);
