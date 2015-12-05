@@ -1,1 +1,19 @@
-Read me for project
+The objective of project is to show how to create socket applications to mimic Remote Procedure Call.
+
+Source files:
+server.c
+client.c
+
+Executable files:
+server.o
+client.o
+
+Instructions:
+Use the "make all" command to compile all source files
+
+Execution:
+To run Server
+$:./server.o
+
+To run Client
+$:./client.o "IP"    //where IP is the ip address of the server ex. ./client.o 127.0.0.1
